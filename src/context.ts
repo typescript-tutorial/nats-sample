@@ -1,11 +1,11 @@
 import { HealthController, LogConfig, LogController } from 'express-ext';
-import { JSONLogger, map } from 'logger-core';
+import { createLogger, map } from 'logger-core';
 import { Db } from 'mongodb';
 import { MongoChecker, MongoInserter } from 'mongodb-extension';
-import { Consume, createRetry, ErrorHandler, Handle, Handler, NumberMap, RetryWriter } from 'mq-one';
+import { createRetry, ErrorHandler, Handle, Handler, NumberMap, RetryWriter, Subscribe } from 'mq-one';
 import { Client } from 'ts-nats';
 import { Attributes, Validator } from 'xvalidators';
-import { Config, NatsChecker, Publisher, Subscriber } from './lib';
+import { NatsChecker, NatsConfig, Publisher, Subscriber } from './lib';
 
 export interface User {
   id: string;
@@ -37,21 +37,21 @@ export const user: Attributes = {
   }
 };
 
-export interface Conf {
+export interface Config {
   log: LogConfig;
   retries: NumberMap;
-  nats: Config;
+  nats: NatsConfig;
 }
 export interface ApplicationContext {
   health: HealthController;
   log: LogController;
-  publish: (data: User) => Promise<void>;
-  consume: Consume<User>;
+  publish: (user: User) => Promise<void>;
+  subscribe: Subscribe<User>;
   handle: Handle<User>;
 }
-export function createContext(db: Db, client: Client, conf: Conf): ApplicationContext {
+export function createContext(db: Db, client: Client, conf: Config): ApplicationContext {
   const retries = createRetry(conf.retries);
-  const logger = new JSONLogger(conf.log.level, conf.log.map);
+  const logger = createLogger(conf.log);
   const log = new LogController(logger, map);
   const mongoChecker = new MongoChecker(db);
   const natsChecker = new NatsChecker(conf.nats.opts);
@@ -64,7 +64,7 @@ export function createContext(db: Db, client: Client, conf: Conf): ApplicationCo
 
   const subscriber = new Subscriber<User>(client, conf.nats.subject);
   const publisher = new Publisher<User>(client, conf.nats.subject)
-  return { health, log, handle: handler.handle, publish: publisher.publish, consume: subscriber.subscribe };
+  return { health, log, handle: handler.handle, publish: publisher.publish, subscribe: subscriber.subscribe };
 }
 export function writeUser(msg: User): Promise<number> {
   console.log('Error: ' + JSON.stringify(msg));

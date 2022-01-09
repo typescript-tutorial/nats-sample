@@ -13,19 +13,18 @@ const conf = merge(config, process.env, env, process.env.ENV);
 const app = express();
 app.use(json());
 
-connectToDb(`${conf.mongo.uri}`, `${conf.mongo.db}`).then(async (db) => {
+connectToDb(`${conf.mongo.uri}`, `${conf.mongo.db}`).then(db => {
   connect(conf.nats.opts).then(client => {
     const ctx = createContext(db, client, conf);
-    ctx.consume(ctx.handle);
+    ctx.subscribe(ctx.handle);
     app.get('/health', ctx.health.check);
     app.patch('/log', ctx.log.config);
     app.post('/send', (req, res) => {
-      const data = req.body as User;
-      ctx.publish(data).then(r => res.json({ message: 'message was produced' }))
+      ctx.publish(req.body as User).then(r => res.json({ message: 'message was produced' }))
         .catch(err => res.json({ error: err }));
     });
     http.createServer(app).listen(conf.port, () => {
       console.log('Start server at port ' + conf.port);
     });
-  });
+  }).catch(err => console.error('Error ' + JSON.stringify(err)));
 });

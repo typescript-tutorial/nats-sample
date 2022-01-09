@@ -1,7 +1,16 @@
-import { Client, Msg } from 'ts-nats';
-import { StringMap, toString } from './core';
+import { Client, connect, Msg } from 'ts-nats';
+import { Config, StringMap, toString } from './core';
 
 export type Hanlde<T> = (data: T, attributes?: StringMap, raw?: Msg) => Promise<number>;
+
+export function createSubscriber<T>(c: Config, logError?: (msg: any) => void, json?: boolean, logInfo?: (msg: any) => void): Promise<Subscriber<T>> {
+  return connect(c.opts).then(client => {
+    return new Subscriber<T>(client, c.subject, logError, json, logInfo);
+  })
+}
+export const createConsumer = createSubscriber;
+export const createReader = createSubscriber;
+export const createReceiver = createSubscriber;
 export class Subscriber<T> {
   constructor(public client: Client, public subject: string, public logError?: (msg: string) => void, public json?: boolean, public logInfo?: (msg: string) => void) {
     this.subject = subject;
