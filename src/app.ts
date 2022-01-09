@@ -21,7 +21,7 @@ connectToDb(`${conf.mongo.uri}`, `${conf.mongo.db}`).then(async (db) => {
     app.patch('/log', ctx.log.config);
     app.post('/send', (req, res) => {
       const data = req.body as User;
-      ctx.publish(data).then(r => res.json({ message: 'message was produce' }))
+      ctx.publish(data).then(r => res.json({ message: 'message was produced' }))
         .catch(err => res.json({ error: err }));
     });
     http.createServer(app).listen(conf.port, () => {
