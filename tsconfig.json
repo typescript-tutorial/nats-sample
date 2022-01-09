@@ -7,9 +7,9 @@
     "node_modules"
   ],
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es5",
     "baseUrl": "./src",
-    "outDir": "./es2017",
+    "outDir": "./es5",
     "module": "commonjs",
     "moduleResolution": "node",
     "pretty": true,
