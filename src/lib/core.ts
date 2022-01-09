@@ -1,10 +1,10 @@
-import { Client, connect as connect2 } from 'ts-nats';
+import { Client, connect as connect2, NatsConnectionOptions } from 'ts-nats';
 
 export interface StringMap {
   [key: string]: string;
 }
 export interface Config {
-  uri: string;
+  opts: NatsConnectionOptions | string | number;
   subject: string;
 }
 export function toString(m: any): string {

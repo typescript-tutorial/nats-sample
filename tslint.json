@@ -4,6 +4,17 @@
         "tslint:recommended"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+      "ordered-imports": true,
+      "no-string-literal": false,
+      "no-console": [
+        true,
+        "trace"
+      ],
+      "max-classes-per-file": [
+        true,
+        3
+      ]
+    },
     "rulesDirectory": []
 }
