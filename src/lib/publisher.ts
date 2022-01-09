@@ -4,7 +4,7 @@ import { Config, StringMap, toString } from './core';
 export function createPublisher<T>(c: Config, logError?: (msg: any) => void, logInfo?: (msg: any) => void): Promise<Publisher<T>> {
   return connect(c.opts).then(client => {
     return new Publisher<T>(client, c.subject, logError, logInfo);
-  })
+  });
 }
 export const createProducer = createPublisher;
 export const createSender = createPublisher;
@@ -58,7 +58,7 @@ export const Writer = Publisher;
 export function createSimplePublisher<T>(opts: ConnectionOptions, logError?: (msg: any) => void, logInfo?: (msg: any) => void): Promise<SimplePublisher<T>> {
   return connect(opts).then(client => {
     return new SimplePublisher<T>(client, logError, logInfo);
-  })
+  });
 }
 export const createSimpleProducer = createSimplePublisher;
 export const createSimpleSender = createSimplePublisher;

@@ -6,7 +6,7 @@ export type Hanlde<T> = (data: T, attributes?: StringMap, raw?: Msg) => Promise<
 export function createSubscriber<T>(c: Config, logError?: (msg: any) => void, json?: boolean, logInfo?: (msg: any) => void): Promise<Subscriber<T>> {
   return connect(c.opts).then(client => {
     return new Subscriber<T>(client, c.subject, logError, json, logInfo);
-  })
+  });
 }
 export const createConsumer = createSubscriber;
 export const createReader = createSubscriber;

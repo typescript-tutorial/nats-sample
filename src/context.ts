@@ -57,13 +57,13 @@ export function createContext(db: Db, connection: NatsConnection, conf: Config):
   const natsChecker = new NatsChecker(conf.nats.opts);
   const health = new HealthController([mongoChecker, natsChecker]);
   const writer = new MongoInserter(db.collection('user'), 'id');
-  const retryWriter = new RetryWriter(writer.write, retries, writeUser, logger.error)
+  const retryWriter = new RetryWriter(writer.write, retries, writeUser, logger.error);
   const errorHandler = new ErrorHandler(logger.error);
   const validator = new Validator<User>(user, true);
   const handler = new Handler<User, void>(retryWriter.write, validator.validate, retries, errorHandler.error, logger.error, logger.info);
 
   const subscriber = new Subscriber<User>(connection, conf.nats.subject);
-  const publisher = new Publisher<User>(connection, conf.nats.subject)
+  const publisher = new Publisher<User>(connection, conf.nats.subject);
   return { health, log, handle: handler.handle, publish: publisher.publish, subscribe: subscriber.subscribe };
 }
 export function writeUser(msg: User): Promise<number> {
