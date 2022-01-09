@@ -1,5 +1,5 @@
-import { Client, connect, Msg } from 'ts-nats';
-import { Config, StringMap, toString } from './core';
+import { connect, Msg, MsgHdrs, NatsConnection, StringCodec } from 'nats';
+import { Config, StringMap } from './core';
 
 export type Hanlde<T> = (data: T, attributes?: StringMap, raw?: Msg) => Promise<number>;
 
@@ -12,7 +12,7 @@ export const createConsumer = createSubscriber;
 export const createReader = createSubscriber;
 export const createReceiver = createSubscriber;
 export class Subscriber<T> {
-  constructor(public client: Client, public subject: string, public logError?: (msg: string) => void, public json?: boolean, public logInfo?: (msg: string) => void) {
+  constructor(public client: NatsConnection, public subject: string, public logError?: (msg: string) => void, public json?: boolean, public logInfo?: (msg: string) => void) {
     this.subject = subject;
     this.subscribe = this.subscribe.bind(this);
     this.get = this.get.bind(this);
@@ -33,22 +33,40 @@ export class Subscriber<T> {
     return this.subscribe(handle);
   }
   subscribe(handle: Hanlde<T>): void {
-    this.client.subscribe(this.subject, (error, msg) => {
-      if (error && this.logError) {
-        this.logError('Fail to consume message ' + toString(error));
-        return;
+    const sc = StringCodec();
+    const sub = this.client.subscribe(this.subject);
+    (async () => {
+      for await (const msg of sub) {
+        const s = sc.decode(msg.data);
+        console.log(`[${sub.getProcessed()}]: ${s}`);
+        const data = (this.json ? JSON.parse(s) : s);
+        handle(data, mapHeaders(msg.headers), msg);
       }
       if (this.logInfo) {
-        this.logInfo('Received : ' + toString(msg));
+        this.logInfo('subscription closed');
       }
-      if (!msg.data) {
-        throw new Error('message content is empty!');
-      }
-      const data = (this.json ? JSON.parse(msg.data) : msg.data);
-      handle(data, undefined, msg);
-    });
+    })();
   }
 }
 export const Consumer = Subscriber;
 export const Reader = Subscriber;
 export const Receiver = Subscriber;
+export function mapHeaders(hdr?: MsgHdrs): StringMap|undefined {
+  if (hdr) {
+    const r: StringMap = {};
+    const keys = hdr.keys();
+    let i = 0;
+    for (const k of keys) {
+      i = i + 1;
+      const obj = hdr.get(k);
+      r[k] = obj;
+    }
+    if (i === 0) {
+      return undefined;
+    } else {
+      return r;
+    }
+  } else {
+    return undefined;
+  }
+}

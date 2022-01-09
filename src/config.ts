@@ -17,7 +17,9 @@ export const config = {
     3: 25000,
   },
   nats: {
-    opts: 'nats://localhost:4222',
+    opts: {
+      servers: 'nats://localhost:4222'
+    },
     subject: 'test'
   },
 };

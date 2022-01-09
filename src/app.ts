@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import express, { json } from 'express';
 import http from 'http';
 import { connectToDb } from 'mongodb-extension';
+import { connect } from 'nats';
 import { config, env } from './config';
 import { createContext, User } from './context';
-import { connect } from './lib';
 
 dotenv.config();
 const conf = merge(config, process.env, env, process.env.ENV);

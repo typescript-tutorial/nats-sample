@@ -1,4 +1,4 @@
-import { connect, NatsConnectionOptions } from 'ts-nats';
+import { connect, ConnectionOptions } from 'nats';
 
 export interface AnyMap {
   [key: string]: any;
@@ -11,7 +11,7 @@ export interface HealhChecker {
 export class NatsChecker implements HealhChecker {
   timeout: number;
   service: string;
-  constructor(public opts: NatsConnectionOptions | string | number, service?: string, timeout?: number) {
+  constructor(public opts: ConnectionOptions, service?: string, timeout?: number) {
     this.timeout = (timeout ? timeout : 4200);
     this.service = (service && service.length > 0 ? service : 'nats');
     this.check = this.check.bind(this);
@@ -20,7 +20,7 @@ export class NatsChecker implements HealhChecker {
   }
   check(): Promise<AnyMap> {
     const obj = {} as AnyMap;
-    const promise: Promise<AnyMap> = connect(this.opts).then(client => obj);
+    const promise: Promise<AnyMap> = connect(this.opts).then(conn => obj);
     if (this.timeout > 0) {
       return promiseTimeOut(this.timeout, promise);
     } else {

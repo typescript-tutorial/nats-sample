@@ -3,7 +3,7 @@ import { createLogger, map } from 'logger-core';
 import { Db } from 'mongodb';
 import { MongoChecker, MongoInserter } from 'mongodb-extension';
 import { createRetry, ErrorHandler, Handle, Handler, NumberMap, RetryWriter, Subscribe } from 'mq-one';
-import { Client } from 'ts-nats';
+import { NatsConnection } from 'nats';
 import { Attributes, Validator } from 'xvalidators';
 import { NatsChecker, NatsConfig, Publisher, Subscriber } from './lib';
 
@@ -49,7 +49,7 @@ export interface ApplicationContext {
   subscribe: Subscribe<User>;
   handle: Handle<User>;
 }
-export function createContext(db: Db, client: Client, conf: Config): ApplicationContext {
+export function createContext(db: Db, connection: NatsConnection, conf: Config): ApplicationContext {
   const retries = createRetry(conf.retries);
   const logger = createLogger(conf.log);
   const log = new LogController(logger, map);
@@ -62,8 +62,8 @@ export function createContext(db: Db, client: Client, conf: Config): Application
   const validator = new Validator<User>(user, true);
   const handler = new Handler<User, void>(retryWriter.write, validator.validate, retries, errorHandler.error, logger.error, logger.info);
 
-  const subscriber = new Subscriber<User>(client, conf.nats.subject);
-  const publisher = new Publisher<User>(client, conf.nats.subject)
+  const subscriber = new Subscriber<User>(connection, conf.nats.subject);
+  const publisher = new Publisher<User>(connection, conf.nats.subject)
   return { health, log, handle: handler.handle, publish: publisher.publish, subscribe: subscriber.subscribe };
 }
 export function writeUser(msg: User): Promise<number> {

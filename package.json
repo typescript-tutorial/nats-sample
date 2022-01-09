@@ -18,7 +18,6 @@
     "mongodb-extension": "^0.1.9",
     "mq-one": "^0.1.5",
     "nats": "^2.4.0",
-    "ts-nats": "^1.2.15",
     "xvalidators": "^0.0.3"
   },
   "devDependencies": {
