@@ -1,11 +1,11 @@
-import { HealthController, LogConfig, LogController } from 'express-ext';
+import { LogConfig } from 'express-ext';
 import { createLogger, map } from 'logger-core';
 import { Db } from 'mongodb';
 import { MongoChecker, MongoInserter } from 'mongodb-extension';
 import { createRetry, ErrorHandler, Handle, Handler, NumberMap, RetryWriter, Subscribe } from 'mq-one';
 import { NatsConnection } from 'nats';
 import { Attributes, Validator } from 'xvalidators';
-import { NatsChecker, NatsConfig, Publisher, Subscriber } from './lib';
+import { NatsChecker, NatsConfig, Publisher, Subscriber, HealthController,LogController } from './lib';
 
 export interface User {
   id: string;
